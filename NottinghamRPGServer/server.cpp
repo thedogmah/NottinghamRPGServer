@@ -4,10 +4,12 @@
 #include "SFML/Main.hpp"
 #include "SFML/System.hpp"
 #include "RPGserver.h"
+#include <vector>
 int main()
 {
 
-	RPGserver server(3000, false);
+	RPGserver server(2000, false);
+	server.Run();
 
 	return 0;
 

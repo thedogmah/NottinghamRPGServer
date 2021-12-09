@@ -13,8 +13,9 @@
 
 class RPGserver
 {
-
+	public:
 	//server network resources
+		sf::Packet packet;
 	sf::TcpListener listener;
 	std::vector<sf::TcpSocket*> client_array;
 
