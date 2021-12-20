@@ -1,5 +1,20 @@
 #include "RPGserver.h"
 
+sf::Packet& operator << (sf::Packet& packet, sf::Vector2i& location)
+
+{
+	return packet << location.x << location.y;
+}
+
+
+sf::Packet& operator >> (sf::Packet& packet, sf::Vector2i& location)
+
+{
+
+	return packet >> location.x << location.y;
+}
+
+
 RPGserver::RPGserver(unsigned short port, bool rawMode = false) :
 	listen_port (port) {
 	logl("RPG Server Starting");
@@ -45,11 +60,15 @@ void RPGserver::ReceivePacket(sf::TcpSocket* client, size_t iterator)
 		//processing received packet into string / object/ vector etc.
 				{
 				std::string received_message;		//process packet to string storage
-
-				packet >> received_message;
+				sf::Vector2i location;
+				std::string username;
+				
+				std::string chat;
+				packet >> username >> received_message >> location.x >> location.y >> chat;
+				//DEBUG COMMENTS std::cout << "\n" << chat << "\n";
 				packet.clear();
-				std::cout << client->getRemoteAddress() << " Says: " << received_message << "\n";
-				packet << received_message << client->getRemoteAddress().toString(), client->getRemotePort(); // repackage with port and remote port.
+				//DEBUG COMMENTSstd::cout << client->getRemoteAddress() << " Says: " << received_message << "\n";
+				packet << username << received_message << location.x << location.y << chat << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
 		
 				BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
 
@@ -64,8 +83,8 @@ void RPGserver::BroadcastPacket(sf::Packet& packet, sf::IpAddress exclude_addres
 	for (size_t iterator = 0; iterator < client_array.size(); iterator++) {
 		sf::TcpSocket* client = client_array[iterator];
 		if (client->send(packet) != sf::Socket::Done) { "Could not send packet on Broadcast function\n"; }
-		else
-			std::cout << "Packet sent from server to " << client->getRemoteAddress() << std::endl;
+		else {}
+		//DEBUG COMMENTS	std::cout << "Packet sent from server to " << client->getRemoteAddress() << std::endl;
 	
 	}
 }
@@ -82,7 +101,7 @@ void RPGserver::ManagePackets()
 		
 	}
 	
-	std::this_thread::sleep_for((std::chrono::milliseconds)100);
+//	std::this_thread::sleep_for((std::chrono::milliseconds)100);
 	
 	}
 

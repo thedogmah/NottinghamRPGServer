@@ -149,6 +149,9 @@
   <ItemGroup>
     <ClInclude Include="RPGserver.h" />
   </ItemGroup>
+  <ItemGroup>
+    <Text Include="sending images over network.txt" />
+  </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
   </ImportGroup>

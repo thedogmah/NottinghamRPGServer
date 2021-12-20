@@ -46,3 +46,5 @@ public:
 
 };
 
+sf::Packet& operator << (sf::Packet& packet, sf::Vector2i& location);
+sf::Packet& operator >> (sf::Packet& packet, sf::Vector2i& location);

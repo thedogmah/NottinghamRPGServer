@@ -1,0 +1,30 @@
+sf::Packet& operator << (sf::Packet& packet, Tileset& tileset)
+{
+        size_t sizeX, sizeY;
+        sizeX = tileset.getSpriteTexture().getSize().x;
+        sizeY = tileset.getSpriteTexture().getSize().y;
+
+        int size = sizeX * sizeY * 4;
+
+        packet << tileset.tileSize;
+        packet << sizeX << sizeY;
+
+        sf::Image tmpImg = tileset.getSprite()->getTexture()->copyToImage();
+
+        const sf::Uint8* tmpUint = tmpImg.getPixelsPtr();
+        
+        for (int i = 0; i < size; ++i)
+        {
+                packet << tmpUint[i];
+        }
+
+        return packet;
+}
+ 
+
+
+ BUG FIX.
+
+ Server side error, package is being cleared
+then port number and IP number read into the packet
+clearing the location x and y.
