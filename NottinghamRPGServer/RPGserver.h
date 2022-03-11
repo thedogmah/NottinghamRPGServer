@@ -25,7 +25,9 @@ class RPGserver
 public:
 	//constructors
 	RPGserver(unsigned short, bool); //default constructor. Perhaps second constructor for cheat mode / beta client?
-
+	int dayDivide=6;
+	float hour = 0;
+	sf::Clock DayClock;
 	//Manage clients
 	void ConnectClients(std::vector<sf::TcpSocket*>*);
 	void DisconnectClients(sf::TcpSocket*, size_t);
@@ -40,7 +42,8 @@ public:
 
 	void ManagePackets();
 	void Run();
-
+	void Update();
+	void WorldSync();
 
 
 

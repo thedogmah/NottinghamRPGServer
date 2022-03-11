@@ -18,12 +18,13 @@ sf::Packet& operator >> (sf::Packet& packet, sf::Vector2i& location)
 RPGserver::RPGserver(unsigned short port, bool rawMode = false) :
 	listen_port (port) {
 	logl("RPG Server Starting");
-	
+	std::cout << "Local IP is: " << sf::IpAddress::getLocalAddress() << "\n";
 	this->rawMode = rawMode;
 	if (rawMode) logl("Warning, Raw Mode Enabled");
 
 	if (listener.listen(listen_port) != sf::Socket::Done)
 		std::cout << "Could not listen";
+	DayClock.restart().asSeconds();
 };
 
 void RPGserver::ConnectClients(std::vector<sf::TcpSocket*> *client_array)
@@ -36,13 +37,14 @@ void RPGserver::ConnectClients(std::vector<sf::TcpSocket*> *client_array)
 			new_client->setBlocking(false);
 			client_array->push_back(new_client);
 			std::cout << "Connected clients is: " << client_array->size() << std::endl;
+			
 		}
 		else {
 			std::cout << "no connections received yet\n";
 			delete (new_client);
 		}
 	}
-	//std::this_thread::sleep_for((std::chrono::milliseconds)100);
+	std::this_thread::sleep_for((std::chrono::milliseconds)100);
 }
 
 void RPGserver::ReceivePacket(sf::TcpSocket* client, size_t iterator)
@@ -62,13 +64,13 @@ void RPGserver::ReceivePacket(sf::TcpSocket* client, size_t iterator)
 				std::string received_message;		//process packet to string storage
 				sf::Vector2i location;
 				std::string username;
-				
+				int data{};
 				std::string chat;
-				packet >> username >> received_message >> location.x >> location.y >> chat;
+				packet >> data >> username >> received_message >> location.x >> location.y >> chat;
 				//DEBUG COMMENTS std::cout << "\n" << chat << "\n";
 				packet.clear();
 				//DEBUG COMMENTSstd::cout << client->getRemoteAddress() << " Says: " << received_message << "\n";
-				packet << username << received_message << location.x << location.y << chat << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
+				packet << data << username << received_message << location.x << location.y << chat << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
 		
 				BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
 
@@ -99,9 +101,10 @@ void RPGserver::ManagePackets()
 		ReceivePacket(client_array[iterator], iterator);
 	//	std::cout << "Currentlty in:Manage Packets Member Function\n";
 		
+		
 	}
-	
-//	std::this_thread::sleep_for((std::chrono::milliseconds)100);
+	Update();
+	std::this_thread::sleep_for((std::chrono::milliseconds)100);
 	
 	}
 
@@ -110,4 +113,44 @@ void RPGserver::ManagePackets()
 	std::thread connection_thread(&RPGserver::ConnectClients, this, &client_array);
 	
 	ManagePackets();
+	
+	//WorldSync();
 }
+
+ void RPGserver::Update()
+ {
+	 hour += DayClock.getElapsedTime().asSeconds();
+	 DayClock.restart();
+	 if (hour > 5)
+	 {
+		 std::cout << "\nHour: " << dayDivide;
+		 dayDivide++;
+		 WorldSync();
+		 hour = 0;
+	 }
+	 if (dayDivide > 20)
+	 {
+		 dayDivide = 0;
+		// sf::TcpSocket* newcl;
+		
+		
+	 }
+
+ }
+
+ void RPGserver::WorldSync()
+ {
+	 int dd = dayDivide;
+	 int header = 1;
+	 sf::Packet Sync;
+	 Sync << header << dd;
+	 std::cout << dayDivide;
+
+	 for (size_t iterator = 0; iterator < client_array.size(); iterator++) {
+		 sf::TcpSocket* client = client_array[iterator];
+		 if (client->send(Sync) != sf::Socket::Done) { "Could not send packet on Broadcast function\n"; }
+
+	 }
+
+	
+ }
