@@ -5,7 +5,7 @@
 #include <chrono>
 #include <string>
 #include "SFML/Network.hpp"
-
+#include "Player.h"
 #define MAX_RAW_DATA 256 
 
 #define logl(x) std::cout << x << std::endl;
@@ -21,7 +21,16 @@ class RPGserver
 
 	unsigned short listen_port;
 	bool rawMode = false;
-
+	std::vector<Player> livePlayers;
+	//player data
+	enum Direction : unsigned char {
+		Stop = 0,
+		Right = 1 << 0,
+		Left = 1 << 1,
+		Up = 1 << 2,
+		Down = 1 << 3
+	};
+	//unsigned char
 public:
 	//constructors
 	RPGserver(unsigned short, bool); //default constructor. Perhaps second constructor for cheat mode / beta client?

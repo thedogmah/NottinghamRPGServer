@@ -1,4 +1,5 @@
 #include "RPGserver.h"
+#include "Player.h"
 
 sf::Packet& operator << (sf::Packet& packet, sf::Vector2i& location)
 
@@ -62,16 +63,18 @@ void RPGserver::ReceivePacket(sf::TcpSocket* client, size_t iterator)
 		//processing received packet into string / object/ vector etc.
 				{
 				std::string received_message;		//process packet to string storage
-				sf::Vector2i location;
+				unsigned char location;
 				std::string username;
 				int data{};
 				std::string chat;
-				packet >> data >> username >> received_message >> location.x >> location.y >> chat;
+				//< data << player.direction << username << chat.playerInput.toAnsiString();
+				packet >> data >> location >> username >> received_message;
+				std::cout << "\nReceived: " << data << " " << " location: "<< static_cast<int>(location) << ", " << username << " " << received_message;
 				//DEBUG COMMENTS std::cout << "\n" << chat << "\n";
 				packet.clear();
 				//DEBUG COMMENTSstd::cout << client->getRemoteAddress() << " Says: " << received_message << "\n";
-				packet << data << username << received_message << location.x << location.y << chat << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
-		
+				packet << data << location <<  username << received_message << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
+				std::cout << "\nReceived after packing and sending: " << data << " " << " location: " << static_cast<int>(location) << ", " << username << " " << received_message;
 				BroadcastPacket(packet, client->getRemoteAddress(), client->getRemotePort());
 
 				}
@@ -104,7 +107,7 @@ void RPGserver::ManagePackets()
 		
 	}
 	Update();
-	std::this_thread::sleep_for((std::chrono::milliseconds)100);
+	std::this_thread::sleep_for((std::chrono::milliseconds)10);
 	
 	}
 
