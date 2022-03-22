@@ -6,6 +6,7 @@
 #include <string>
 #include "SFML/Network.hpp"
 #include "Player.h"
+#include <map>
 #define MAX_RAW_DATA 256 
 
 #define logl(x) std::cout << x << std::endl;
@@ -18,6 +19,9 @@ class RPGserver
 	sf::Packet packet;
 	sf::TcpListener listener;
 	std::vector<sf::TcpSocket*> client_array;
+	std::map <std::string, std::string>ChatMap;
+
+	std::map <std::string, sf::TcpSocket*> IDmap ;
 
 	unsigned short listen_port;
 	bool rawMode = false;
@@ -52,10 +56,17 @@ public:
 	void ManagePackets();
 	void Run();
 	void Update();
-	void WorldSync();
 
 
+	//server functions
+	void timeSync();
+	void positionSync(sf::Packet packet);
+	void serverClientTrade(sf::Packet packet, sf::TcpSocket* client);
+	void clientID(sf::Packet packet, sf::TcpSocket* client);
+	void serverStats();//display serverstatistics //perhaps write a method within that also sends a packet of the stats to client
 
+	//server handshakes
+	void serverTradeRequest(sf::TcpSocket* target, std::string username);
 };
 
 sf::Packet& operator << (sf::Packet& packet, sf::Vector2i& location);
