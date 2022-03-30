@@ -89,62 +89,69 @@ void RPGserver::ReceivePacket(sf::TcpSocket* client, size_t iterator)
 	{
 	
 		if (packet.getDataSize() > 0)
-		//processing received packet into string / object/ vector etc.
-				{
-				std::string received_message;		//process packet to string storage
-				unsigned char location;
-				std::string username;
-				int data=0;
-				std::string chat;
-				sf::Vector2f position; //position packet
-				//< data << player.direction << username << chat.playerInput.toAnsiString();
+			//processing received packet into string / object/ vector etc.
+		{
+			std::string received_message;		//process packet to string storage
+			unsigned char location;
+			std::string username;
+			int data = 0;
+			std::string chat;
+			sf::Vector2f position; //position packet
+			//< data << player.direction << username << chat.playerInput.toAnsiString();
 
-				packet >> data;
+			packet >> data;
 
-				if (data == 0)
+			if (data == 0)
 
-				{
-					int info{};
-					packet >> info;
-					std::cout << "\n" << info;
-				}
-			
-				if (data == 5)
-				{
-					clientID(packet, client);
-				}
+			{
+				int info{};
+				packet >> info;
+				std::cout << "\n" << info;
+			}
 
-					if (data == 2) {
-						packet >> location >> username >> received_message;
-						std::cout << "\nReceived: " << data << " " << " location: " << static_cast<int>(location) << ", " << username << " " << received_message;
-						//DEBUG COMMENTS std::cout << "\n" << chat << "\n";
-						packet.clear();
-						packet << data << location << username << received_message << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
-						std::cout << "\nReceived after packing and sending: " << data << " " << " location: " << static_cast<int>(location) << ", " << username << " " << received_message;
+			if (data == 5)
+			{
+				clientID(packet, client);
+			}
 
-						BroadcastPacket(packet, client->getRemoteAddress(), 2000);
-						
-					}
-				
+			if (data == 2) {
+				packet >> location >> username >> received_message;
+				std::cout << "\nReceived: " << data << " " << " location: " << static_cast<int>(location) << ", " << username << " " << received_message;
+				//DEBUG COMMENTS std::cout << "\n" << chat << "\n";
+				packet.clear();
+				packet << data << location << username << received_message << client->getRemoteAddress().toString() << client->getRemotePort(); // repackage with port and remote port.
+				std::cout << "\nReceived after packing and sending: " << data << " " << " location: " << static_cast<int>(location) << ", " << username << " " << received_message;
 
-				if (data == 3) {
-					//packet >> username >> position.x >> position.y;
-					
-					(positionSync(packet));
-				}
-
-
-				if (data == 4) {
-					//packet >> username >> position.x >> position.y;
-
-					(serverClientTrade(packet, client));
-				}
-
-				
-				//DEBUG COMMENTSstd::cout << client->getRemoteAddress() << " Says: " << received_message << "\n";
-				
-				else
 				BroadcastPacket(packet, client->getRemoteAddress(), 2000);
+
+			}
+
+
+			if (data == 3) {
+				//packet >> username >> position.x >> position.y;
+
+				(positionSync(packet));
+			}
+
+
+			if (data == 4) {
+				//packet >> username >> position.x >> position.y;
+
+				(serverClientTrade(packet, client));
+			}
+
+
+			//header descriptor for Send Hug
+			if (data == 21)
+			{
+			
+				serverClientHug(packet, client);
+			}
+			//DEBUG COMMENTSstd::cout << client->getRemoteAddress() << " Says: " << received_message << "\n";
+
+			else{
+		}
+				//BroadcastPacket(packet, client->getRemoteAddress(), 2000);
 
 				}
 
@@ -313,6 +320,7 @@ void RPGserver::ManagePackets()
 	 for (; it != IDmap.end(); ++it)
 		 if (it->second == client)
 			 break;
+	 
 
 	 std::cout << "\nServer received trade request from " << it->first << " to " << username;
 
@@ -326,4 +334,44 @@ void RPGserver::ManagePackets()
 			 std::cout << "\nSending request to: " << it->first;
 			 break;
 		 }
+ }
+
+ void RPGserver::serverClientHug(sf::Packet packet, sf::TcpSocket* client)
+ {
+ 
+	 std::string username;
+	 packet >> username;
+
+
+	 auto it = IDmap.begin();
+	 for (; it != IDmap.end(); ++it)
+		 if (it->second == client)
+			 break;
+
+	 for (auto it2 = IDmap.begin(); it2 != IDmap.end(); ++it2)
+	 if (it2->first == username)
+	 {
+		 sf::TcpSocket* client;
+		 client = it2->second;
+
+		 sf::Packet sendHug;
+		 
+		 // int data = 20; //20 for trade request from server
+		 int data = 21; //20 for trade request from server
+		 sendHug << data << it->first;
+		 if (client->send(sendHug) != sf::Socket::Done)
+		 {
+			 std::cout << "\nHug send failed\n";
+
+
+		 }
+		 else {
+			 std::cout << "Hug received to server and sent to " << username;
+		 }
+
+
+		 break;
+	 }
+
+
  }

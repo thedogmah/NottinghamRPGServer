@@ -62,6 +62,7 @@ public:
 	void timeSync();
 	void positionSync(sf::Packet packet);
 	void serverClientTrade(sf::Packet packet, sf::TcpSocket* client);
+	void serverClientHug(sf::Packet paccket, sf::TcpSocket* client);
 	void clientID(sf::Packet packet, sf::TcpSocket* client);
 	void serverStats();//display serverstatistics //perhaps write a method within that also sends a packet of the stats to client
 
